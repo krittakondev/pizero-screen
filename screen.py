@@ -32,9 +32,11 @@ dirname, filename = os.path.split(os.path.abspath(__file__))
 
 tmp_check = ""
 
+show = "status"
+
 step_anime = 0
 def fetch_screen(text, stat):
-    print(os.environ.get("env_screen"))
+    #print(os.environ.get("env_screen"))
     try:
         now = datetime.now()
         time_str = now.strftime('%H:%M:%S')
@@ -66,19 +68,23 @@ def fetch_screen(text, stat):
 
             #epd.display_fast(epd.getbuffer(image))
 
-        global step_anime
-        if step_anime > 23:
-            step_anime = 0
-        anime_img = Image.open(f"{dirname}/pic/enterprise-confused-{step_anime}.bmp").convert('1')
-        image.paste(anime_img, (0,20))
-        step_anime += 1
+
+        global show
+        print(show)
+        if show == "status":
+            global step_anime
+            if step_anime > 23:
+                step_anime = 0
+            anime_img = Image.open(f"{dirname}/pic/enterprise-confused-{step_anime}.bmp").convert('1')
+            image.paste(anime_img, (0,20))
+            step_anime += 1
 
 
-        cpu_per = psutil.cpu_percent()
-        draw.text((10, 30), f"CPU: {cpu_per}%", font=font, fill=255)  
-        draw.text((10, 50), f"MEM: {psutil.virtual_memory().percent}%", font=font, fill=255)  
-        draw.text((10, 70), f"DISK: {psutil.disk_usage('/').percent}%", font=font, fill=255)  
-        draw.text((10, 90), f"TEM: {psutil.sensors_temperatures()['cpu_thermal'][0].current} c", font=font, fill=255)  
+            cpu_per = psutil.cpu_percent()
+            draw.text((10, 30), f"CPU: {cpu_per}%", font=font, fill=255)  
+            draw.text((10, 50), f"MEM: {psutil.virtual_memory().percent}%", font=font, fill=255)  
+            draw.text((10, 70), f"DISK: {psutil.disk_usage('/').percent}%", font=font, fill=255)  
+            draw.text((10, 90), f"TEM: {psutil.sensors_temperatures()['cpu_thermal'][0].current} c", font=font, fill=255)  
 
         epd.displayPartial(epd.getbuffer(image))
 
@@ -120,20 +126,22 @@ def QuickStart(bus):
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 GPIO.setup(4,GPIO.IN)  # GPIO4 is used to detect whether an external power supply is inserted
+GPIO.setup(1,GPIO.IN)
   
 bus = smbus.SMBus(1)  # 0 = /dev/i2c-0 (port I2C0), 1 = /dev/i2c-1 (port I2C1)
 
 
 QuickStart(bus)
 
-print ("  ")
-print ("Initialize the CW2015 ......")
+#print ("  ")
+#print ("Initialize the CW2015 ......")
 
 
+tmp_btn = GPIO.HIGH
 while True:
 
- print ("++++++++++++++++++++")
- print ("Voltage:%5.2fV" % readVoltage(bus))
+ #print ("++++++++++++++++++++")
+ #print ("Voltage:%5.2fV" % readVoltage(bus))
  fetch_screen("%i%%" % readCapacity(bus), GPIO.input(4) == GPIO.HIGH)
  
  if readCapacity(bus) == 100:
@@ -141,14 +149,23 @@ while True:
  if readCapacity(bus) < 5:
         print ("Battery LOW")
 
+ btn = GPIO.input(1)
+ if btn == GPIO.LOW and tmp_btn == GPIO.HIGH:
+     if show == "status":
+         show = ""
+         print("show other")
+     else:
+         show = "status"
+         print("show status")
 
 
 
+ tmp_btn = btn
 #GPIO is high when power is plugged in
- if (GPIO.input(4) == GPIO.HIGH):       
-        print ("Power Adapter Plug In ") 
- if (GPIO.input(4) == GPIO.LOW):      
-        print ("Power Adapter Unplug")
+ #if (GPIO.input(4) == GPIO.HIGH):       
+ #       print ("Power Adapter Plug In ") 
+ #if (GPIO.input(4) == GPIO.LOW):      
+ #       print ("Power Adapter Unplug")
 
  #time.sleep(0.02)
  
