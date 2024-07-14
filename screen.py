@@ -10,6 +10,7 @@ from PIL import ImageFont, ImageDraw, Image
 from datetime import datetime  
 import psutil
 import smbus
+import subprocess
 
 epd = epaper.epaper('epd2in13_V4').EPD()
 font_path = '/usr/share/fonts/truetype/tlwg/Sawasdee-Bold.ttf'  # แก้ไขตามตำแหน่งไฟล์ฟอนต์ของคุณ
@@ -71,20 +72,25 @@ def fetch_screen(text, stat):
 
         global show
         print(show)
-        if show == "status":
-            global step_anime
-            if step_anime > 23:
-                step_anime = 0
-            anime_img = Image.open(f"{dirname}/pic/enterprise-confused-{step_anime}.bmp").convert('1')
-            image.paste(anime_img, (0,20))
-            step_anime += 1
+        match show:
+            case "status":
+                global step_anime
+                if step_anime > 23:
+                    step_anime = 0
+                anime_img = Image.open(f"{dirname}/pic/enterprise-confused-{step_anime}.bmp").convert('1')
+                image.paste(anime_img, (0,20))
+                step_anime += 1
 
 
-            cpu_per = psutil.cpu_percent()
-            draw.text((10, 30), f"CPU: {cpu_per}%", font=font, fill=255)  
-            draw.text((10, 50), f"MEM: {psutil.virtual_memory().percent}%", font=font, fill=255)  
-            draw.text((10, 70), f"DISK: {psutil.disk_usage('/').percent}%", font=font, fill=255)  
-            draw.text((10, 90), f"TEM: {psutil.sensors_temperatures()['cpu_thermal'][0].current} c", font=font, fill=255)  
+                cpu_per = psutil.cpu_percent()
+                draw.text((10, 30), f"CPU: {cpu_per}%", font=font, fill=255)  
+                draw.text((10, 50), f"MEM: {psutil.virtual_memory().percent}%", font=font, fill=255)  
+                draw.text((10, 70), f"DISK: {psutil.disk_usage('/').percent}%", font=font, fill=255)  
+                draw.text((10, 90), f"TEM: {psutil.sensors_temperatures()['cpu_thermal'][0].current} c", font=font, fill=255)  
+            case _:
+                ip_address = get_ip_address("wlan0")
+                draw.text((10, 50), f"ip: {ip_address}%", font=font, fill=0)  
+
 
         epd.displayPartial(epd.getbuffer(image))
 
@@ -122,6 +128,26 @@ def QuickStart(bus):
 
        
 #----------------------------------------------------------------------------------
+
+def get_ip_address(interface):
+    try:
+        result = subprocess.run(['ip', 'addr', 'show', interface], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        if result.returncode != 0:
+            #raise Exception(f"Error getting IP address: {result.stderr}")
+            return ""
+        
+        lines = result.stdout.split('\n')
+        for line in lines:
+            if 'inet ' in line:
+                ip_address = line.strip().split()[1].split('/')[0]
+                return ip_address
+        #raise Exception(f"No IP address found for interface {interface}")
+        return ""
+    
+    except Exception as e:
+        return ""
+
+
         
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
