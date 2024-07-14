@@ -6,7 +6,7 @@ import RPi.GPIO as GPIO
 #from waveshare_epd import epd2in13_V4
 import epaper
 import os
-from PIL import ImageFont, ImageDraw, Image
+from PIL import ImageFont, ImageDraw, Image, ImageSequence
 from datetime import datetime  
 import psutil
 import smbus
@@ -29,6 +29,10 @@ epd.Clear(0xFF)
 
 dirname, filename = os.path.split(os.path.abspath(__file__))
 
+img_gif = Image.open(dirname+"/pic/rick-rick-and-morty.gif")
+#step_gif = []
+#for frame in ImageSequence.Iterator(img_gif):
+#    step_gif.append( frame)
 
 tmp_check = ""
 
@@ -67,18 +71,25 @@ def fetch_screen(text, stat):
             #epd.display_fast(epd.getbuffer(image))
 
         global step_anime
-        if step_anime > 23:
+        global img_gif
+        if step_anime > img_gif.n_frames:
             step_anime = 0
-        anime_img = Image.open(f"{dirname}/pic/enterprise-confused-{step_anime}.bmp").convert('1')
-        image.paste(anime_img, (0,20))
+        #anime_img = Image.open(f"{dirname}/pic/rick-{step_anime}.bmp").convert('1')
+        #anime_img = step_gif[step_anime]
+        img_gif.seek(step_anime)
+        anime_img =  img_gif
+        print(step_anime)
+        image.paste(anime_img, (150,20))
         step_anime += 1
 
 
-        cpu_per = psutil.cpu_percent()
-        draw.text((10, 30), f"CPU: {cpu_per}%", font=font, fill=255)  
-        draw.text((10, 50), f"MEM: {psutil.virtual_memory().percent}%", font=font, fill=255)  
-        draw.text((10, 70), f"DISK: {psutil.disk_usage('/').percent}%", font=font, fill=255)  
-        draw.text((10, 90), f"TEM: {psutil.sensors_temperatures()['cpu_thermal'][0].current} c", font=font, fill=255)  
+        #cpu_per = psutil.cpu_percent()
+        #draw.text((10, 30), f"CPU: {cpu_per}%", font=font, fill=255)  
+        #draw.text((10, 50), f"MEM: {psutil.virtual_memory().percent}%", font=font, fill=255)  
+        #draw.text((10, 70), f"DISK: {psutil.disk_usage('/').percent}%", font=font, fill=255)  
+        #draw.text((10, 90), f"TEM: {psutil.sensors_temperatures()['cpu_thermal'][0].current} c", font=font, fill=255)  
+
+        #epd.display_fast(epd.getbuffer(image))
 
         epd.displayPartial(epd.getbuffer(image))
 
@@ -129,8 +140,22 @@ QuickStart(bus)
 print ("  ")
 print ("Initialize the CW2015 ......")
 
-
 while True:
+
+    image = Image.new('1', (epd.height, epd.width), 255)  # 255: สีขาว
+
+    if step_anime > img_gif.n_frames-1:
+        step_anime = 0
+    #anime_img = Image.open(f"{dirname}/pic/rick-{step_anime}.bmp").convert('1')
+    #anime_img = step_gif[step_anime]
+    #img_gif.seek(step_anime)
+    #anime_img =  img_gif.resize((122, 250))
+    draw = ImageDraw.Draw(image)
+    draw.text((1, 1), str(step_anime))
+    epd.displayPartial(epd.getbuffer(image))
+    step_anime += 1
+
+while False:
 
  print ("++++++++++++++++++++")
  print ("Voltage:%5.2fV" % readVoltage(bus))
