@@ -69,6 +69,7 @@ def fetch_screen(text, stat):
 
         global step_anime
         iface = "wlan0"
+        ip = ""
         if step_anime == 0:
             ip = get_ip_address(iface)
         if step_anime > 23:
