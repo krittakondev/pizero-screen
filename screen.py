@@ -68,6 +68,9 @@ def fetch_screen(text, stat):
             #epd.display_fast(epd.getbuffer(image))
 
         global step_anime
+        iface = "wlan0"
+        if step_anime == 0:
+            ip = get_ip_address(iface)
         if step_anime > 23:
             step_anime = 0
         anime_img = Image.open(f"{dirname}/pic/enterprise-confused-{step_anime}.bmp").convert('1')
@@ -76,11 +79,11 @@ def fetch_screen(text, stat):
 
 
         cpu_per = psutil.cpu_percent()
-        draw.text((10, 25), f"CPU: {cpu_per}%", font=font, fill=255)  
-        draw.text((10, 40), f"MEM: {psutil.virtual_memory().percent}%", font=font, fill=255)  
-        draw.text((10, 65), f"DISK: {psutil.disk_usage('/').percent}%", font=font, fill=255)  
-        draw.text((10, 80), f"TEM: {psutil.sensors_temperatures()['cpu_thermal'][0].current} c", font=font, fill=255)  
-        draw.text((10, 105), f"ip: {get_ip_address('wlan0')}", font=font, fill=255)  
+        draw.text((10, 25), f"{iface}: {ip}", font=font, fill=255)  
+        draw.text((10, 40), f"CPU: {cpu_per}%", font=font, fill=255)  
+        draw.text((10, 55), f"MEM: {psutil.virtual_memory().percent}%", font=font, fill=255)  
+        draw.text((10, 60), f"DISK: {psutil.disk_usage('/').percent}%", font=font, fill=255)  
+        draw.text((10, 75), f"TEM: {psutil.sensors_temperatures()['cpu_thermal'][0].current} c", font=font, fill=255)  
 
         epd.displayPartial(epd.getbuffer(image))
 
