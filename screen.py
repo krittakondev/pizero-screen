@@ -63,6 +63,7 @@ class Screen:
         self.dirname, self.filename = os.path.split(os.path.abspath(__file__))
 
         self.ip = self.get_ip_address()
+        self.img_top_bar = Image.new('1', (250, 19), 255)
 
         for i in range(23):
              self.anime_img.append(Image.open(f"{self.dirname}/pic/enterprise-confused-{i}.bmp").convert('1'))
@@ -89,11 +90,12 @@ class Screen:
         now = datetime.now()
         time_str = now.strftime('%H:%M:%S')
         date_str = now.strftime('%Y-%m-%d')
-
     
+        self.image_screen.paste(self.img_top_bar)
         self.draw.text((2, 1), time_str, font=font, fill=self.text_color_top_bar) 
         self.draw.text((80, 1), date_str, font=font, fill=self.text_color_top_bar)
-        self.draw.text((220, 1), "%i%%" % readCapacity(self.bus), font=font, fill=self.text_color_top_bar)  
+        self.draw.text((220, 1), "%i%%" % self.readCapacity(), font=font, fill=self.text_color_top_bar)  
+        
         # if stat:
         #     icon_width, icon_height = icon.size
         #     #image.paste(icon, (epd.height - 1 - icon_width, 1))
@@ -111,8 +113,9 @@ class Screen:
             if count > max:
                 count = 0
             
-            print(count)
             self.update_backgroud(self.anime_img[count])
+            self.update_top_bar()
+            self.update_status()
 
             self.refresh()
             count += 1
