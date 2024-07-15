@@ -2,6 +2,7 @@
 import struct
 import sys
 import time
+import subprocess
 import RPi.GPIO as GPIO
 #from waveshare_epd import epd2in13_V4
 import epaper
@@ -75,10 +76,11 @@ def fetch_screen(text, stat):
 
 
         cpu_per = psutil.cpu_percent()
-        draw.text((10, 30), f"CPU: {cpu_per}%", font=font, fill=255)  
-        draw.text((10, 50), f"MEM: {psutil.virtual_memory().percent}%", font=font, fill=255)  
-        draw.text((10, 70), f"DISK: {psutil.disk_usage('/').percent}%", font=font, fill=255)  
-        draw.text((10, 90), f"TEM: {psutil.sensors_temperatures()['cpu_thermal'][0].current} c", font=font, fill=255)  
+        draw.text((10, 25), f"CPU: {cpu_per}%", font=font, fill=255)  
+        draw.text((10, 40), f"MEM: {psutil.virtual_memory().percent}%", font=font, fill=255)  
+        draw.text((10, 65), f"DISK: {psutil.disk_usage('/').percent}%", font=font, fill=255)  
+        draw.text((10, 80), f"TEM: {psutil.sensors_temperatures()['cpu_thermal'][0].current} c", font=font, fill=255)  
+        draw.text((10, 105), f"ip: {get_ip_address('wlan0')}", font=font, fill=255)  
 
         epd.displayPartial(epd.getbuffer(image))
 
@@ -89,7 +91,23 @@ def fetch_screen(text, stat):
         #print(f"เกิดข้อผิดพลาด: {e}")
         raise e
     #finally:
-        #epd2in13_V4.epdconfig.module_exit()
+def get_ip_address(interface):
+    try:
+        result = subprocess.run(['ip', 'addr', 'show', interface], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        if result.returncode != 0:
+            #raise Exception(f"Error getting IP address: {result.stderr}")
+            return ""
+
+        lines = result.stdout.split('\n')
+        for line in lines:
+            if 'inet ' in line:
+                ip_address = line.strip().split()[1].split('/')[0]
+                return ip_address
+        #raise Exception(f"No IP address found for interface {interface}")
+        return ""
+
+    except Exception as e:
+        return ""       #epd2in13_V4.epdconfig.module_exit()
 
 def readVoltage(bus):
         "This function returns as float the voltage from the Raspi UPS Hat via the provided SMBus object"
