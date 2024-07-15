@@ -33,7 +33,27 @@ dirname, filename = os.path.split(os.path.abspath(__file__))
 
 tmp_check = ""
 
+def get_ip_address(interface):
+    try:
+        result = subprocess.run(['ip', 'addr', 'show', interface], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        if result.returncode != 0:
+            #raise Exception(f"Error getting IP address: {result.stderr}")
+            return ""
+
+        lines = result.stdout.split('\n')
+        for line in lines:
+            if 'inet ' in line:
+                ip_address = line.strip().split()[1].split('/')[0]
+                return ip_address
+        #raise Exception(f"No IP address found for interface {interface}")
+        return ""
+
+    except Exception as e:
+        return ""       #epd2in13_V4.epdconfig.module_exit()
+
 step_anime = 0
+iface = "wlan0"
+ip = get_ip_address(iface)
 def fetch_screen(text, stat):
     print(os.environ.get("env_screen"))
     try:
@@ -68,11 +88,10 @@ def fetch_screen(text, stat):
             #epd.display_fast(epd.getbuffer(image))
 
         global step_anime
-        iface = "wlan0"
-        ip = ""
+        global ip
+        global iface
         if step_anime > 23:
             step_anime = 0
-        if step_anime == 0:
             ip = get_ip_address(iface)
         anime_img = Image.open(f"{dirname}/pic/enterprise-confused-{step_anime}.bmp").convert('1')
         image.paste(anime_img, (0,20))
@@ -95,24 +114,6 @@ def fetch_screen(text, stat):
         #print(f"เกิดข้อผิดพลาด: {e}")
         raise e
     #finally:
-def get_ip_address(interface):
-    try:
-        result = subprocess.run(['ip', 'addr', 'show', interface], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        if result.returncode != 0:
-            #raise Exception(f"Error getting IP address: {result.stderr}")
-            return ""
-
-        lines = result.stdout.split('\n')
-        for line in lines:
-            if 'inet ' in line:
-                ip_address = line.strip().split()[1].split('/')[0]
-                return ip_address
-        #raise Exception(f"No IP address found for interface {interface}")
-        return ""
-
-    except Exception as e:
-        return ""       #epd2in13_V4.epdconfig.module_exit()
-
 def readVoltage(bus):
         "This function returns as float the voltage from the Raspi UPS Hat via the provided SMBus object"
         read = bus.read_word_data(CW2015_ADDRESS, CW2015_REG_VCELL)
