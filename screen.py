@@ -112,7 +112,7 @@ def QuickStart(bus):
         
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
-GPIO.setup(4,GPIO.IN)  # GPIO4 is used to detect whether an external power supply is inserted
+GPIO.setup(4, GPIO.IN)  # GPIO4 is used to detect whether an external power supply is inserted
   
 bus = smbus.SMBus(1)  # 0 = /dev/i2c-0 (port I2C0), 1 = /dev/i2c-1 (port I2C1)
 
@@ -123,25 +123,25 @@ print ("  ")
 print ("Initialize the CW2015 ......")
 
 
+
 while True:
     try:
         print ("++++++++++++++++++++")
         print ("Voltage:%5.2fV" % readVoltage(bus))
-        fetch_screen("%i%%" % readCapacity(bus), GPIO.input(4) == GPIO.HIGH)
+        batt_per = readCapacity(bus)
+        is_plug = GPIO.input(4)
+        fetch_screen("%i%%" % batt_per, is_plug == GPIO.HIGH)
 
-        if readCapacity(bus) == 100:
-            print ("Battery FULL")
-        if readCapacity(bus) < 5:
-            print ("Battery LOW")
-
-
-
+        # if batt_per == 100:
+        #     print ("Battery FULL")
+        # if batt_per < 5:
+        #     print ("Battery LOW")
 
         #GPIO is high when power is plugged in
-        if (GPIO.input(4) == GPIO.HIGH):       
-            print ("Power Adapter Plug In ") 
-        if (GPIO.input(4) == GPIO.LOW):      
-            print ("Power Adapter Unplug")
+        # if (is_plug== GPIO.HIGH):       
+        #     print ("Power Adapter Plug In ") 
+        # if (is_plug == GPIO.LOW):      
+        #     print ("Power Adapter Unplug")
 
     except KeyboardInterrupt:
         print("กด Ctrl+C แล้วออกโปรแกรม")
