@@ -75,6 +75,10 @@ def fetch_screen(text, stat):
     
     # tmp_check = check
     # print(epd.height, epd.width)
+ 
+    draw.text((2, 1), time_str, font=font, fill=0)  # แสดงเวลา
+    draw.text((80, 1), date_str, font=font, fill=0)  # แสดงวันที่
+    draw.text((220, 1), text, font=font, fill=0)  
 
     global step_anime
     global ip
