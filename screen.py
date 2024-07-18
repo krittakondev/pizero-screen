@@ -30,7 +30,9 @@ epd.Clear(0xFF)
 dirname, filename = os.path.split(os.path.abspath(__file__))
 
 
-tmp_check = ""
+# tmp_check = ""
+
+#batt_icon = Image.open(dirname+"/icon.png").convert('1')
 
 step_anime = 0
 def fetch_screen(text, stat):
@@ -44,24 +46,24 @@ def fetch_screen(text, stat):
     #bg_black = Image.new('1', (epd.height-20, epd.width), 0)  
     #image.paste(bg_black, (0,20))
 
-    check = time_str+date_str+text+str(stat)
+    # check = time_str+date_str+text+str(stat)
     draw = ImageDraw.Draw(image)
     #draw.text((120, 50), "ดีจ้าาาา", font=font15, fill=255)  
     #global tmp_check 
     #if check != tmp_check:
-    icon = Image.open(dirname+"/icon.png").convert('1')
     
-    tmp_check = check
-    print(epd.height, epd.width)
+    # tmp_check = check
+    # print(epd.height, epd.width)
 
     draw.text((2, 1), time_str, font=font, fill=0)  # แสดงเวลา
     draw.text((80, 1), date_str, font=font, fill=0)  # แสดงวันที่
     draw.text((220, 1), text, font=font, fill=0)  
     
-    if stat:
-        icon_width, icon_height = icon.size
-        #image.paste(icon, (epd.height - 1 - icon_width, 1))
-        image.paste(icon, (185, -10))
+    # if stat:
+    #     global batt_icon
+    #     icon_width, icon_height = icon.size
+    #     #image.paste(icon, (epd.height - 1 - icon_width, 1))
+    #     image.paste(batt_icon, (185, -10))
 
         #epd.display_fast(epd.getbuffer(image))
 
