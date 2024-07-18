@@ -2,6 +2,7 @@
 import struct
 import sys
 import time
+import subprocess
 import RPi.GPIO as GPIO
 #from waveshare_epd import epd2in13_V4
 import epaper
@@ -34,7 +35,27 @@ dirname, filename = os.path.split(os.path.abspath(__file__))
 
 #batt_icon = Image.open(dirname+"/icon.png").convert('1')
 
+def get_ip_address(interface):
+    try:
+        result = subprocess.run(['ip', 'addr', 'show', interface], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        if result.returncode != 0:
+            #raise Exception(f"Error getting IP address: {result.stderr}")
+            return ""
+
+        lines = result.stdout.split('\n')
+        for line in lines:
+            if 'inet ' in line:
+                ip_address = line.strip().split()[1].split('/')[0]
+                return ip_address
+        #raise Exception(f"No IP address found for interface {interface}")
+        return ""
+
+    except Exception as e:
+        return ""       #epd2in13_V4.epdconfig.module_exit()
+
 step_anime = 0
+iface = "wlan0"
+ip = get_ip_address(iface)
 def fetch_screen(text, stat):
     print(os.environ.get("env_screen"))
     now = datetime.now()
@@ -55,37 +76,27 @@ def fetch_screen(text, stat):
     # tmp_check = check
     # print(epd.height, epd.width)
 
-    draw.text((2, 1), time_str, font=font, fill=0)  # แสดงเวลา
-    draw.text((80, 1), date_str, font=font, fill=0)  # แสดงวันที่
-    draw.text((220, 1), text, font=font, fill=0)  
-    
-    # if stat:
-    #     global batt_icon
-    #     icon_width, icon_height = icon.size
-    #     #image.paste(icon, (epd.height - 1 - icon_width, 1))
-    #     image.paste(batt_icon, (185, -10))
-
-        #epd.display_fast(epd.getbuffer(image))
-
     global step_anime
+    global ip
+    global iface
     if step_anime > 23:
         step_anime = 0
-    anime_img = Image.open(f"{dirname}/pic/enterprise-confused-{step_anime}.bmp").convert('1')
+        ip = get_ip_address(iface)
+    anime_img = Image.open(f"{dirname}/pic/enterprise-confused-{step_anime}.bmp")
     image.paste(anime_img, (0,20))
     step_anime += 1
 
 
     cpu_per = psutil.cpu_percent()
-    draw.text((10, 30), f"CPU: {cpu_per}%", font=font, fill=255)  
-    draw.text((10, 50), f"MEM: {psutil.virtual_memory().percent}%", font=font, fill=255)  
-    draw.text((10, 70), f"DISK: {psutil.disk_usage('/').percent}%", font=font, fill=255)  
-    draw.text((10, 90), f"TEM: {psutil.sensors_temperatures()['cpu_thermal'][0].current} c", font=font, fill=255)  
+    draw.text((8, 25), f"{iface}: {ip}", font=font, fill=255)  
+    draw.text((8, 40), f"CPU: {cpu_per}%", font=font, fill=255)  
+    draw.text((8, 55), f"MEM: {psutil.virtual_memory().percent}%", font=font, fill=255)  
+    draw.text((8, 70), f"DISK: {psutil.disk_usage('/').percent}%", font=font, fill=255)  
+    draw.text((8, 85), f"TEM: {psutil.sensors_temperatures()['cpu_thermal'][0].current} c", font=font, fill=255)  
 
     epd.displayPartial(epd.getbuffer(image))
 
     #finally:
-        #epd2in13_V4.epdconfig.module_exit()
-
 def readVoltage(bus):
         "This function returns as float the voltage from the Raspi UPS Hat via the provided SMBus object"
         read = bus.read_word_data(CW2015_ADDRESS, CW2015_REG_VCELL)
