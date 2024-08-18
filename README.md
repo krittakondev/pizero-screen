@@ -1,6 +1,9 @@
 # raspberry pi zero display
 show status and animation on your RPI
 
+## preview
+![gif](./preview/1.gif)
+
 ## hardware require
 - Raspberry pi zero 
 - Waveshare 2.13Inch E-Ink Display HAT
