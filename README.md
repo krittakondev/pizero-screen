@@ -16,7 +16,7 @@ sudo apt update
 sudo apt install python3 git -y 
 git clone https://github.com/krittakondev/pizero-screen.git
 cd pizero-screen
-python3 -m venv .venv 
+python3 -m venv screenenv
 ./screenenv/bin/pip3 install -r ./requirements.txt
 ```
 ## run
